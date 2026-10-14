@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDEFF1;
+  --paper-2:#E3E6E9;
+  --ink:#161C24;
+  --ink-soft:#4A555F;
+  --rule:#C3CAD1;
+  --accent-a:#2E4A7D;
+  --accent-b:#7A6218;
+  --flag:#9C2B2B;
+}
+
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Newsreader",Georgia,serif;
+  font-size:18px;
+  line-height:1.62;
+  padding:0 clamp(1rem,4vw,3.5rem) 6rem;
+}
+
+.wrap{max-width:1360px;margin:0 auto;}
+
+/* ---------- masthead ---------- */
+
+header.mast{padding:clamp(2.5rem,6vw,4.5rem) 0 0;}
+
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent-b);margin:0 0 1.4rem;
+}
+
+h1{
+  font-family:"Bricolage Grotesque","Helvetica Neue",sans-serif;
+  font-weight:700;font-size:clamp(2.3rem,6.2vw,4.1rem);
+  line-height:.98;letter-spacing:-.025em;margin:0 0 1.6rem;max-width:16ch;
+}
+h1 em{font-style:normal;color:var(--accent-a);}
+
+.standfirst{font-size:1.12rem;color:var(--ink-soft);max-width:46ch;margin:0 0 1rem;}
+
+.provenance-line{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:.7rem;letter-spacing:.04em;color:var(--ink-soft);
+  margin:0 0 2.6rem;
+}
+
+/* ---------- the brief ---------- */
+
+.question{
+  border-top:2px solid var(--ink);border-bottom:1px solid var(--rule);
+  padding:1.6rem 0 1.8rem;margin:0 0 3.4rem;
+  display:grid;grid-template-columns:9rem 1fr;gap:0 1.5rem;
+}
+.question .tag{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-soft);padding-top:.55rem;
+}
+.question .body{font-style:italic;font-size:1.06rem;max-width:70ch;}
+.question .body p{margin:0 0 .85rem;}
+.question .body p:last-child{margin-bottom:0;}
+
+/* ---------- two-column body ---------- */
+
+.doc{position:relative;}
+.doc::before{content:"";position:absolute;top:0;bottom:0;left:60%;width:1px;background:var(--rule);}
+
+.row{display:grid;grid-template-columns:60% 40%;align-items:start;margin:0 0 1.55rem;}
+.row > .main{padding-right:clamp(1.2rem,2.6vw,2.4rem);}
+.row > .notes{padding-left:clamp(1.2rem,2.6vw,2.4rem);}
+
+.main p{margin:0 0 .95rem;max-width:62ch;}
+.main p:last-child{margin-bottom:0;}
+.main ul{margin:.2rem 0 1rem;padding-left:1.1rem;max-width:62ch;}
+.main li{margin:0 0 .5rem;}
+strong{font-weight:500;}
+
+h2{
+  font-family:"Bricolage Grotesque","Helvetica Neue",sans-serif;
+  font-weight:700;font-size:1.62rem;letter-spacing:-.015em;line-height:1.15;
+  margin:2.9rem 0 .3rem;max-width:26ch;
+}
+h2 .num{
+  font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;
+  letter-spacing:.12em;color:var(--accent-b);display:block;margin-bottom:.6rem;
+}
+.row:first-child h2{margin-top:0;}
+
+h3{
+  font-family:"Bricolage Grotesque","Helvetica Neue",sans-serif;
+  font-weight:700;font-size:1.03rem;margin:1.5rem 0 .45rem;
+}
+
+/* ---------- reference marks ---------- */
+
+a.ref{
+  font-family:"IBM Plex Mono",monospace;font-size:.62em;font-weight:600;
+  vertical-align:super;line-height:0;color:var(--accent-a);
+  text-decoration:none;padding:0 .06em 0 .12em;
+}
+a.ref:hover,a.ref:focus{background:var(--accent-a);color:var(--paper);}
+
+/* ---------- sidenotes ---------- */
+
+.note{
+  font-family:"IBM Plex Mono",monospace;font-size:.735rem;line-height:1.55;
+  color:var(--ink-soft);margin:0 0 1.05rem;
+  padding-left:1.9rem;text-indent:-1.9rem;max-width:44ch;
+}
+.note:last-child{margin-bottom:0;}
+.note .n{color:var(--accent-a);font-weight:600;display:inline-block;width:1.9rem;text-indent:0;}
+.note b{color:var(--ink);font-weight:600;}
+.note a{color:var(--accent-b);text-decoration:underline;text-underline-offset:2px;}
+.note a:hover{background:var(--accent-b);color:var(--paper);text-decoration:none;}
+
+.note.orphan{border-left:3px solid var(--flag);padding-left:1.6rem;text-indent:-1.6rem;}
+.note.orphan .n{color:var(--flag);}
+
+/* provenance tags */
+.tag{
+  font-family:"IBM Plex Mono",monospace;font-size:.55rem;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;
+  padding:.1rem .3rem;border-radius:2px;white-space:nowrap;
+  vertical-align:.08em;margin-right:.15rem;
+}
+.t-verified{background:var(--accent-a);color:var(--paper);}
+.t-unverified{background:var(--flag);color:var(--paper);}
+.t-mine{background:var(--rule);color:var(--ink);}
+
+/* citation block — pairs with a VERIFIED note */
+.note.cite{
+  border-left:2px solid var(--accent-b);
+  padding-left:.7rem;text-indent:0;margin-left:1.2rem;
+}
+.note.cite .n{display:none;}
+
+/* ---------- sidebar (aside inside the main column) ---------- */
+
+.sidebar{
+  background:var(--paper-2);border:1px solid var(--rule);
+  border-left:4px solid var(--accent-a);
+  padding:1.35rem 1.5rem 1.4rem;margin:1.6rem 0 1.7rem;max-width:62ch;
+}
+.sidebar .kicker{
+  font-family:"IBM Plex Mono",monospace;font-size:.62rem;
+  letter-spacing:.17em;text-transform:uppercase;color:var(--accent-a);margin:0 0 .7rem;
+}
+.sidebar h4{
+  font-family:"Bricolage Grotesque",sans-serif;font-weight:700;
+  font-size:1.2rem;letter-spacing:-.018em;line-height:1.14;margin:0 0 .85rem;
+}
+.sidebar p{font-size:.93rem;line-height:1.57;margin:0 0 .8rem;max-width:none;}
+.sidebar p:last-child{margin-bottom:0;}
+.sidebar ul{margin:.2rem 0 .95rem;padding-left:0;list-style:none;}
+.sidebar li{
+  font-size:.9rem;line-height:1.5;margin:0 0 .6rem;
+  padding-left:.95rem;border-left:2px solid var(--rule);
+}
+.sidebar li:last-child{margin-bottom:0;}
+
+/* ---------- open questions ---------- */
+
+.open{
+  margin-top:4rem;border-top:2px solid var(--ink);
+  border-bottom:1px solid var(--rule);padding:1.4rem 0 1.5rem;
+}
+.open h2{margin-top:0;}
+.open .prompt{
+  font-style:italic;color:var(--ink-soft);
+  max-width:62ch;margin:0 0 1.1rem;
+}
+.open ul{margin:0;padding-left:1.1rem;max-width:62ch;}
+.open li{margin:0 0 .55rem;}
+
+footer{
+  margin-top:2.5rem;font-family:"IBM Plex Mono",monospace;
+  font-size:.68rem;color:var(--ink-soft);letter-spacing:.04em;
+}
+
+/* ---------- quality floor ---------- */
+
+:focus-visible{outline:2px solid var(--accent-a);outline-offset:2px;}
+
+@media (max-width:880px){
+  body{font-size:17px;}
+  .doc::before{display:none;}
+  .row{grid-template-columns:1fr;}
+  .row > .main{padding-right:0;}
+  .row > .notes{padding-left:.9rem;border-left:2px solid var(--rule);margin:1rem 0 1.6rem;}
+  .question{grid-template-columns:1fr;}
+  .question .tag{padding-top:0;margin-bottom:.7rem;}
+}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow">{{EYEBROW}}</p>
+  <h1>{{HEADLINE}}</h1>
+  <p class="standfirst">{{STANDFIRST}}</p>
+  <p class="provenance-line">Written for: <em>{{AUDIENCE}}</em> &middot; {{CONFIRMED_OR_ASSUMED}}</p>
+
+  <div class="question">
+    <div class="tag">The brief</div>
+    <div class="body">
+      <p>{{USER_QUESTION_VERBATIM}}</p>
+    </div>
+  </div>
+</header>
+
+<div class="doc">
+
+  <!-- One .row per paragraph or small group. Notes align with the row that cites them.
+
+       A note MUST live in the same .row as the mark pointing at it, and notes
+       within a row MUST run in the same order as their marks. Alignment is
+       per-row, so a note filed one row early still numbers correctly and still
+       renders beside the wrong paragraph. check.py fails on both. -->
+  <section class="row">
+    <div class="main">
+      <h2><span class="num">01 / {{SECTION_KICKER}}</span>{{SECTION_TITLE}}</h2>
+    </div>
+    <div class="notes"></div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <p>Body text with a reference mark<a class="ref" data-note="example-slug"></a> attached to the term it explains, not parked at the end of the sentence.</p>
+    </div>
+    <div class="notes">
+      <!-- Same row as the mark, same order as the marks above. -->
+      <div class="note" data-note="example-slug"><span class="n"></span><span class="tag t-verified">verified</span> <b>Term</b>: definition, checked against a source retrieved this session.</div>
+      <div class="note cite">Author, A. (Year). "Title." <em>Journal</em>. <a href="https://example.org">link</a></div>
+    </div>
+  </section>
+
+  <!-- Provenance variants:
+       <span class="tag t-unverified">unverified</span>  recalled, not checked
+       <span class="tag t-mine">my reading</span>        synthesis or framing
+  -->
+
+  <section class="open">
+    <div class="row">
+      <div class="main">
+        <h2><span class="num">{{NN}} / Loose ends</span>Open questions</h2>
+        <p class="prompt">When something doesn't land, say what you think it means. A wrong guess diagnoses faster than "unclear."</p>
+        <ul>
+          <li>{{UNDECIDED_CHOICE}}</li>
+          <li>{{OFFER_NOT_YET_TAKEN_UP}}</li>
+          <li>{{CLAIM_STILL_UNVERIFIED}}</li>
+        </ul>
+      </div>
+      <div class="notes"></div>
+    </div>
+  </section>
+
+</div>
+
+<footer>Working document &middot; revised {{DATE}}</footer>
+
+</div>
+
+<script>
+// Footnote numbers are derived from document order, never stored.
+// Inserting a note is a pure insert: nothing downstream needs renumbering.
+(function () {
+  var order = new Map();
+  var n = 0;
+
+  document.querySelectorAll('a.ref[data-note]').forEach(function (a) {
+    var key = a.dataset.note;
+    if (!order.has(key)) order.set(key, ++n);
+    a.textContent = order.get(key);
+    a.setAttribute('href', '#note-' + key);
+  });
+
+  document.querySelectorAll('.note[data-note]').forEach(function (d) {
+    var key = d.dataset.note;
+    d.id = 'note-' + key;
+    var num = order.get(key);
+    var span = d.querySelector('.n');
+    if (num === undefined) {
+      // Nothing references this note. Show it rather than hiding it.
+      d.classList.add('orphan');
+      if (span) span.textContent = '!';
+    } else if (span) {
+      span.textContent = num;
+    }
+  });
+})();
+</script>
+</body>
+</html>
