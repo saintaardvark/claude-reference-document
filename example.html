@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spectral log-density estimation — a primer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDEFF1;
+  --paper-2:#E3E6E9;
+  --ink:#161C24;
+  --ink-soft:#4A555F;
+  --rule:#C3CAD1;
+  --accent-a:#2E4A7D;
+  --accent-b:#7A6218;
+  --flag:#9C2B2B;
+}
+
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Newsreader",Georgia,serif;
+  font-size:18px;
+  line-height:1.62;
+  padding:0 clamp(1rem,4vw,3.5rem) 6rem;
+}
+
+.wrap{max-width:1360px;margin:0 auto;}
+
+/* ---------- masthead ---------- */
+
+header.mast{padding:clamp(2.5rem,6vw,4.5rem) 0 0;}
+
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent-b);margin:0 0 1.4rem;
+}
+
+h1{
+  font-family:"Bricolage Grotesque","Helvetica Neue",sans-serif;
+  font-weight:700;font-size:clamp(2.3rem,6.2vw,4.1rem);
+  line-height:.98;letter-spacing:-.025em;margin:0 0 1.6rem;max-width:16ch;
+}
+h1 em{font-style:normal;color:var(--accent-a);}
+
+.standfirst{font-size:1.12rem;color:var(--ink-soft);max-width:46ch;margin:0 0 1rem;}
+
+.provenance-line{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:.7rem;letter-spacing:.04em;color:var(--ink-soft);
+  margin:0 0 2.6rem;
+}
+
+/* ---------- the brief ---------- */
+
+.question{
+  border-top:2px solid var(--ink);border-bottom:1px solid var(--rule);
+  padding:1.6rem 0 1.8rem;margin:0 0 3.4rem;
+  display:grid;grid-template-columns:9rem 1fr;gap:0 1.5rem;
+}
+.question .tag{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-soft);padding-top:.55rem;
+}
+.question .body{font-style:italic;font-size:1.06rem;max-width:70ch;}
+.question .body p{margin:0 0 .85rem;}
+.question .body p:last-child{margin-bottom:0;}
+
+/* ---------- two-column body ---------- */
+
+.doc{position:relative;}
+.doc::before{content:"";position:absolute;top:0;bottom:0;left:60%;width:1px;background:var(--rule);}
+
+.row{display:grid;grid-template-columns:60% 40%;align-items:start;margin:0 0 1.55rem;}
+.row > .main{padding-right:clamp(1.2rem,2.6vw,2.4rem);}
+.row > .notes{padding-left:clamp(1.2rem,2.6vw,2.4rem);}
+
+.main p{margin:0 0 .95rem;max-width:62ch;}
+.main p:last-child{margin-bottom:0;}
+.main ul{margin:.2rem 0 1rem;padding-left:1.1rem;max-width:62ch;}
+.main li{margin:0 0 .5rem;}
+strong{font-weight:500;}
+
+h2{
+  font-family:"Bricolage Grotesque","Helvetica Neue",sans-serif;
+  font-weight:700;font-size:1.62rem;letter-spacing:-.015em;line-height:1.15;
+  margin:2.9rem 0 .3rem;max-width:26ch;
+}
+h2 .num{
+  font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;
+  letter-spacing:.12em;color:var(--accent-b);display:block;margin-bottom:.6rem;
+}
+.row:first-child h2{margin-top:0;}
+
+h3{
+  font-family:"Bricolage Grotesque","Helvetica Neue",sans-serif;
+  font-weight:700;font-size:1.03rem;margin:1.5rem 0 .45rem;
+}
+
+/* ---------- reference marks ---------- */
+
+a.ref{
+  font-family:"IBM Plex Mono",monospace;font-size:.62em;font-weight:600;
+  vertical-align:super;line-height:0;color:var(--accent-a);
+  text-decoration:none;padding:0 .06em 0 .12em;
+}
+a.ref:hover,a.ref:focus{background:var(--accent-a);color:var(--paper);}
+
+/* ---------- sidenotes ---------- */
+
+.note{
+  font-family:"IBM Plex Mono",monospace;font-size:.735rem;line-height:1.55;
+  color:var(--ink-soft);margin:0 0 1.05rem;
+  padding-left:1.9rem;text-indent:-1.9rem;max-width:44ch;
+}
+.note:last-child{margin-bottom:0;}
+.note .n{color:var(--accent-a);font-weight:600;display:inline-block;width:1.9rem;text-indent:0;}
+.note b{color:var(--ink);font-weight:600;}
+.note a{color:var(--accent-b);text-decoration:underline;text-underline-offset:2px;}
+.note a:hover{background:var(--accent-b);color:var(--paper);text-decoration:none;}
+
+.note.orphan{border-left:3px solid var(--flag);padding-left:1.6rem;text-indent:-1.6rem;}
+.note.orphan .n{color:var(--flag);}
+
+/* provenance tags */
+.tag{
+  font-family:"IBM Plex Mono",monospace;font-size:.55rem;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;
+  padding:.1rem .3rem;border-radius:2px;white-space:nowrap;
+  vertical-align:.08em;margin-right:.15rem;
+}
+.t-verified{background:var(--accent-a);color:var(--paper);}
+.t-unverified{background:var(--flag);color:var(--paper);}
+.t-mine{background:var(--rule);color:var(--ink);}
+
+/* citation block — pairs with a VERIFIED note */
+.note.cite{
+  border-left:2px solid var(--accent-b);
+  padding-left:.7rem;text-indent:0;margin-left:1.2rem;
+}
+.note.cite .n{display:none;}
+
+/* ---------- sidebar (aside inside the main column) ---------- */
+
+.sidebar{
+  background:var(--paper-2);border:1px solid var(--rule);
+  border-left:4px solid var(--accent-a);
+  padding:1.35rem 1.5rem 1.4rem;margin:1.6rem 0 1.7rem;max-width:62ch;
+}
+.sidebar .kicker{
+  font-family:"IBM Plex Mono",monospace;font-size:.62rem;
+  letter-spacing:.17em;text-transform:uppercase;color:var(--accent-a);margin:0 0 .7rem;
+}
+.sidebar h4{
+  font-family:"Bricolage Grotesque",sans-serif;font-weight:700;
+  font-size:1.2rem;letter-spacing:-.018em;line-height:1.14;margin:0 0 .85rem;
+}
+.sidebar p{font-size:.93rem;line-height:1.57;margin:0 0 .8rem;max-width:none;}
+.sidebar p:last-child{margin-bottom:0;}
+.sidebar ul{margin:.2rem 0 .95rem;padding-left:0;list-style:none;}
+.sidebar li{
+  font-size:.9rem;line-height:1.5;margin:0 0 .6rem;
+  padding-left:.95rem;border-left:2px solid var(--rule);
+}
+.sidebar li:last-child{margin-bottom:0;}
+
+/* ---------- open questions ---------- */
+
+.open{
+  margin-top:4rem;border-top:2px solid var(--ink);
+  border-bottom:1px solid var(--rule);padding:1.4rem 0 1.5rem;
+}
+.open h2{margin-top:0;}
+.open .prompt{
+  font-style:italic;color:var(--ink-soft);
+  max-width:62ch;margin:0 0 1.1rem;
+}
+.open ul{margin:0;padding-left:1.1rem;max-width:62ch;}
+.open li{margin:0 0 .55rem;}
+
+footer{
+  margin-top:2.5rem;font-family:"IBM Plex Mono",monospace;
+  font-size:.68rem;color:var(--ink-soft);letter-spacing:.04em;
+}
+
+/* ---------- quality floor ---------- */
+
+:focus-visible{outline:2px solid var(--accent-a);outline-offset:2px;}
+
+@media (max-width:880px){
+  body{font-size:17px;}
+  .doc::before{display:none;}
+  .row{grid-template-columns:1fr;}
+  .row > .main{padding-right:0;}
+  .row > .notes{padding-left:.9rem;border-left:2px solid var(--rule);margin:1rem 0 1.6rem;}
+  .question{grid-template-columns:1fr;}
+  .question .tag{padding-top:0;margin-bottom:.7rem;}
+}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+
+pre{font-family:"IBM Plex Mono",monospace;font-size:.78rem;line-height:1.5;background:var(--paper-2);border:1px solid var(--rule);padding:.9rem 1rem;overflow-x:auto;max-width:62ch;margin:.4rem 0 1rem;}
+code{font-family:"IBM Plex Mono",monospace;font-size:.85em;}
+.eq{font-family:"IBM Plex Mono",monospace;font-size:.9rem;background:var(--paper-2);padding:.5rem .8rem;display:inline-block;margin:.2rem 0 .8rem;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow">Reading companion · Francis Bach, 25 Sep 2026</p>
+  <h1>Trading <em>exponentials</em> for least-squares</h1>
+  <p class="standfirst">What Bach's "Exploding variance of means of exponentials" post is solving, how the trick works, and whether you can use it today.</p>
+  <p class="provenance-line">Written for: <em>Hugh, as personal reference — technical, no formal maths background</em> &middot; assumed, not confirmed</p>
+
+  <div class="question">
+    <div class="tag">The brief</div>
+    <div class="body">
+      <p>I came across this article: https://francisbach.com/spectral_log_density_estimation/</p>
+      <p>I'm trying hard to understand it, but I find the math hard to follow -- I don't have the background.  Please create a /reference-artifact that goes over:</p>
+      <p>* the problem it's describing, at a high level<br>* what the least-squares approach is, and some examples of other places it's used<br>* why that works here<br>* and when you'd want to use this<br>&nbsp;&nbsp;&nbsp;* possibly by pointing to already-existing functions in eg. scikit-learn, or "Tensorflow does this if you use the `foo` switch", etc</p>
+    </div>
+  </div>
+</header>
+
+<div class="doc">
+
+  <!-- ===================== 01 ===================== -->
+  <section class="row">
+    <div class="main">
+      <h2><span class="num">01 / The problem</span>Comparing two piles of data, point by point</h2>
+    </div>
+    <div class="notes"></div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <p><strong>The short version:</strong> you have samples from two distributions, <em>p</em> and <em>q</em>. For any point <em>x</em>, you want to know how much more likely it is under <em>p</em> than under <em>q</em> — on a log scale.</p>
+      <p>That quantity is the <strong>log relative density</strong><a class="ref" data-note="log-ratio"></a>, log(p(x)/q(x)). Average it over <em>p</em> and you get one summary number: the <strong>KL divergence</strong><a class="ref" data-note="kl"></a>, a measure of how different the two piles are.</p>
+    </div>
+    <div class="notes">
+      <div class="note" data-note="log-ratio"><span class="n"></span><span class="tag t-verified">verified</span> <b>Relative density</b>: Bach writes it dp/dq. Stated goal of the post: estimate its logarithm, which he says is equivalent to estimating KL.</div>
+      <div class="note cite">Bach, "Relative density estimation as a testbed" section. <a href="https://francisbach.com/spectral_log_density_estimation/">francisbach.com</a></div>
+      <div class="note" data-note="kl"><span class="n"></span><span class="tag t-mine">my reading</span> <b>KL divergence</b>: zero when p = q, grows as they diverge. Not symmetric: KL(p‖q) ≠ KL(q‖p).</div>
+    </div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <p>Why this shows up everywhere:</p>
+      <ul>
+        <li><strong>Classification.</strong> "How likely is class A given these features" is a ratio of densities in disguise.</li>
+        <li><strong>Mutual information.</strong> Compare the joint distribution to the "if they were independent" distribution<a class="ref" data-note="mi"></a>.</li>
+        <li><strong>Normalising models.</strong> Turning arbitrary scores into probabilities that sum to 1 — softmax, the last layer of most neural nets<a class="ref" data-note="uses"></a>.</li>
+        <li><strong>Species distribution modelling.</strong> MaxEnt compares environments at presence records against background points<a class="ref" data-note="maxent"></a>.</li>
+      </ul>
+    </div>
+    <div class="notes">
+      <div class="note" data-note="mi"><span class="n"></span><span class="tag t-verified">verified</span> Bach's "Mutual information" section: set q to the product of p's marginals, and the log-ratio becomes log p(x₂|x₁) − log p(x₂), i.e. conditional density estimation.</div>
+      <div class="note" data-note="uses"><span class="n"></span><span class="tag t-verified">verified</span> His intro lists normalising probabilistic models, smooth maxima, transformers and entropy-regularised RL. His conclusion names the neural-net last layer, where cross-entropy and log-sum-exp dominate, as a possible target.</div>
+      <div class="note" data-note="maxent"><span class="n"></span><span class="tag t-verified">verified</span> <b>Added, not requested.</b> Elith et al. show MaxEnt minimises relative entropy (KL) between a density from presence data and one from the landscape; the model is effectively a log density ratio.</div>
+      <div class="note cite">Elith, Phillips, Hastie et al. (2011). "A statistical explanation of MaxEnt for ecologists." <em>Diversity and Distributions</em> 17:43–57. <a href="https://rngr.net/publications/assisted-migration/a-statistical-explanation-of-maxent-for-ecologists">abstract</a></div>
+    </div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <h3>The obstacle: averages of exponentials</h3>
+      <p>The standard ("variational") recipe finds a scoring function <em>v(x)</em> by maximising an objective. That objective contains the average of <strong>e<sup>v(x)</sup></strong> over samples from <em>q</em><a class="ref" data-note="dv"></a>.</p>
+      <p>Averages of exponentials are statistically nasty. A few rare samples with large <em>v</em> get exponentiated into enormous values and dominate the mean. Run it twice on fresh data and you get very different answers.</p>
+    </div>
+    <div class="notes">
+      <div class="note" data-note="dv"><span class="n"></span><span class="tag t-verified">verified</span> Two forms in the post. Eq. (1): E<sub>p</sub>[v] + 1 − E<sub>q</sub>[e<sup>v</sup>]. Eq. (2), Donsker–Varadhan: E<sub>p</sub>[v] − log E<sub>q</sub>[e<sup>v</sup>]. The second is the log-sum-exp form.</div>
+      <div class="note cite">Bach, Eqs. (1)–(2). <a href="https://francisbach.com/spectral_log_density_estimation/">francisbach.com</a></div>
+    </div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <p>Bach quantifies it. If the exponent is normally distributed with spread σ, the relative squared error of the average over <em>n</em> samples is<a class="ref" data-note="var-formula"></a>:</p>
+      <div class="eq">(e<sup>σ²</sup> − 1) / n</div>
+      <p>More data helps only linearly; more spread hurts exponentially. At σ = 3 you need roughly 800,000 samples to get the relative squared error down to 1%<a class="ref" data-note="worked"></a>. Taking a log afterwards doesn't fix it.</p>
+    </div>
+    <div class="notes">
+      <div class="note" data-note="var-formula"><span class="n"></span><span class="tag t-verified">verified</span> Formula from the post; also checked by simulation this session (σ = 0.5, 1, 2 matched closely).</div>
+      <div class="note" data-note="worked"><span class="n"></span><span class="tag t-mine">my reading</span> Arithmetic: e⁹ − 1 ≈ 8,100; 8,100 / 0.01 ≈ 810,000. At σ = 3 the simulation itself became unreliable — the heavy tail made even measuring the variance noisy, which is the point.</div>
+    </div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <p><strong>Bach's question</strong>, paraphrased: can you keep what's good about this log-sum-exp machinery while dodging its variance problem?</p>
+    </div>
+    <div class="notes"></div>
+  </section>
+
+  <!-- ===================== 02 ===================== -->
+  <section class="row">
+    <div class="main">
+      <h2><span class="num">02 / The tool</span>What least-squares is</h2>
+    </div>
+    <div class="notes"></div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <p><strong>Least-squares:</strong> choose parameters so that the sum of squared prediction errors is as small as possible.</p>
+      <p>For a model that is linear in its parameters, there is a <strong>closed-form answer</strong> — no iterative optimiser, no learning rate. You compute a mean vector and a covariance matrix from the data, then solve one linear system<a class="ref" data-note="normal-eq"></a>.</p>
+    </div>
+    <div class="notes">
+      <div class="note" data-note="normal-eq"><span class="n"></span><span class="tag t-mine">my reading</span> <b>Normal equations</b>: θ = (XᵀX)⁻¹Xᵀy. Everything needed is sums of products of the data — "moments" in Bach's language.</div>
+    </div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <p>Why statisticians like it<a class="ref" data-note="ls-pros"></a>:</p>
+      <ul>
+        <li><strong>Stable.</strong> Only means and covariances are computed. No exponentials, so no rare-sample blow-ups.</li>
+        <li><strong>Exact.</strong> Mature linear-algebra routines give the answer to machine precision.</li>
+        <li><strong>Analysable.</strong> Its error behaviour is well understood.</li>
+      </ul>
+      <p>Its known weakness: forcing it onto classification (regressing on 0/1 labels) causes artefacts, notably <strong>masking</strong>, where a class never wins anywhere<a class="ref" data-note="masking"></a>.</p>
+    </div>
+    <div class="notes">
+      <div class="note" data-note="ls-pros"><span class="n"></span><span class="tag t-verified">verified</span> Bach's own pros list: closed form via linear algebra, moments with fixed controlled variance, sharp analyses.</div>
+      <div class="note" data-note="masking"><span class="n"></span><span class="tag t-verified">verified</span> He cites Hastie, Tibshirani &amp; Friedman, <em>Elements of Statistical Learning</em> §2.4, and shows masking in his final figure (top right: a class disappears).</div>
+    </div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <p>Places you've likely met it:</p>
+      <ul>
+        <li><strong>Linear regression</strong> — <code>sklearn.linear_model.LinearRegression</code>, <code>Ridge</code>, <code>numpy.polyfit</code>.</li>
+        <li><strong>GIS georeferencing</strong> — fitting an affine or polynomial transform to ground control points<a class="ref" data-note="gcp"></a>.</li>
+        <li><strong>GPS fixes and Kalman filters</strong> — position from over-determined, noisy measurements<a class="ref" data-note="gps"></a>.</li>
+        <li><strong>PCA, LDA, CCA</strong> — all reduce to eigenvalue problems on covariance matrices, the same machinery Bach uses in §03.</li>
+        <li><strong>Density ratios already</strong> — uLSIF estimates p/q by least-squares<a class="ref" data-note="ulsif"></a>.</li>
+      </ul>
+    </div>
+    <div class="notes">
+      <div class="note" data-note="gcp"><span class="n"></span><span class="tag t-unverified">unverified</span> GDAL's <code>gdalwarp -order N</code> fits a polynomial from GCPs; I believe by least-squares but did not check the source.</div>
+      <div class="note" data-note="gps"><span class="n"></span><span class="tag t-unverified">unverified</span> Standard textbook framing; not checked this session.</div>
+      <div class="note" data-note="ulsif"><span class="n"></span><span class="tag t-verified">verified</span> Python <code>densratio</code> package, default <code>method="uLSIF"</code>. This corresponds to the <b>Pearson</b> divergence — the version Bach says has the wrong geometry.</div>
+    </div>
+  </section>
+
+  <!-- ===================== 03 ===================== -->
+  <section class="row">
+    <div class="main">
+      <h2><span class="num">03 / The trick</span>Why least-squares works here</h2>
+      <p>The idea in one line: <strong>rewrite KL as a blend of simpler divergences, each of which is a least-squares problem, then solve the whole blend in one shot.</strong></p>
+    </div>
+    <div class="notes"></div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <h3>Step 1 — Split KL into a continuum of chi-square divergences</h3>
+      <p>There is a family of "weighted chi-square" divergences, one for each dial setting ρ between 0 and 1<a class="ref" data-note="chi2"></a>. Bach's key identity says KL is exactly a weighted average of all of them<a class="ref" data-note="identity"></a>.</p>
+      <p>You can take this identity on trust. It is the only genuinely clever piece of maths in the post.</p>
+    </div>
+    <div class="notes">
+      <div class="note" data-note="chi2"><span class="n"></span><span class="tag t-verified">verified</span> ρ = 0 is Pearson chi-square; ρ = 1 is Neyman; ρ = ½ is Le Cam. Generator: f(t) = ½(t−1)²/(ρt + 1 − ρ).</div>
+      <div class="note" data-note="identity"><span class="n"></span><span class="tag t-verified">verified</span> t log t − t + 1 = ∫₀¹ (t−1)²(1−ρ)/(ρt+1−ρ) dρ. Checked numerically this session at t = 0.1, 1.5, 4, 20 — matches to machine precision. Bach says it comes from operator-convex function theory.</div>
+    </div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <h3>Step 2 — Each chi-square piece is a regression</h3>
+      <p>For a fixed ρ, estimating that divergence is literally a least-squares regression<a class="ref" data-note="regression"></a>:</p>
+      <ul>
+        <li>Label every <em>p</em> sample with one target value, every <em>q</em> sample with another.</li>
+        <li>Fit a function of <em>x</em> to those labels by squared error.</li>
+      </ul>
+      <p>The objective is quadratic, so only means and covariances appear. <strong>No exponentials → no exploding variance.</strong></p>
+    </div>
+    <div class="notes">
+      <div class="note" data-note="regression"><span class="n"></span><span class="tag t-verified">verified</span> Targets: y = 1/ρ for p samples (weight ρ), y = −1/(1−ρ) for q samples (weight 1−ρ). Bach notes the resemblance to noise-contrastive estimation.</div>
+    </div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <h3>Step 3 — With linear features, each piece has a formula</h3>
+      <p>Represent <em>x</em> by a feature vector φ(x) — raw coordinates, polynomials, random features, whatever. Then each ρ-regression has the closed form<a class="ref" data-note="theta"></a>:</p>
+      <div class="eq">θ(ρ) = (ρ·Σ<sub>p</sub> + (1−ρ)·Σ<sub>q</sub>)⁻¹ (μ<sub>p</sub> − μ<sub>q</sub>)</div>
+      <p>Σ is a second-moment matrix, μ a mean. Four statistics of your data; that's all the method ever sees.</p>
+    </div>
+    <div class="notes">
+      <div class="note" data-note="theta"><span class="n"></span><span class="tag t-verified">verified</span> Transcribed from the "Linear models" section. Σ<sub>p</sub> = E<sub>p</sub>[φφᵀ], μ<sub>p</sub> = E<sub>p</sub>[φ].</div>
+    </div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <h3>Step 4 — One eigendecomposition solves every ρ at once</h3>
+      <p>Problem: Step 3 needs a matrix inverse for <em>every</em> ρ in [0, 1], and the individual problems misbehave near 0 and 1.</p>
+      <p>Solution: a <strong>generalised eigendecomposition</strong> of the pair (Σ<sub>p</sub>, Σ<sub>q</sub>) finds a basis where both matrices are diagonal<a class="ref" data-note="geig"></a>. In that basis every inverse is trivial, and the integral over ρ collapses to a finite sum:</p>
+      <div class="eq">KL estimate = Σᵢ ((μ<sub>p</sub>−μ<sub>q</sub>)ᵀvᵢ)² · f(λᵢ)/(λᵢ−1)²</div>
+      <p>The ρ = 0 / ρ = 1 instabilities cancel out in the sum<a class="ref" data-note="stable"></a>.</p>
+    </div>
+    <div class="notes">
+      <div class="note" data-note="geig"><span class="n"></span><span class="tag t-mine">my reading</span> Bach draws the ridge-regression analogy himself (many penalty values, one decomposition). My gloss: each eigen-direction vᵢ is a direction where p and q have variance ratio λᵢ.</div>
+      <div class="note" data-note="stable"><span class="n"></span><span class="tag t-verified">verified</span> Condition he gives: stable whenever f(t)/(t−1)² stays bounded. For KL it's decreasing, starting at 1.</div>
+    </div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <h3>The price: bias for variance</h3>
+      <p>The result is a <strong>lower bound</strong> on the true divergence — systematically a little low, but far less noisy<a class="ref" data-note="bias"></a>.</p>
+      <ul>
+        <li><strong>Small or medium data:</strong> the variance saving wins; spectral beats variational.</li>
+        <li><strong>Lots of data:</strong> variance shrinks anyway, so the unbiased variational method catches up or wins.</li>
+      </ul>
+    </div>
+    <div class="notes">
+      <div class="note" data-note="bias"><span class="n"></span><span class="tag t-verified">verified</span> Bach's Gaussian analysis and 2-D simulations both show this crossover. My own run (5-D Gaussians, true KL 0.40, linear features) gave 0.51 → 0.45 → 0.38 → 0.35 at n = 50 → 20,000: converging to a value just under the truth.</div>
+    </div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <h3>A bonus Bach didn't plan for</h3>
+      <p>Applied to labelled data, the same machinery gives a <strong>closed-form substitute for softmax / multinomial logistic regression</strong><a class="ref" data-note="softmax"></a>. It behaves similarly to softmax. In his comparison figure, masking shows up in plain least-squares on one-hot labels, not in the KL spectral version.</p>
+    </div>
+    <div class="notes">
+      <div class="note" data-note="softmax"><span class="n"></span><span class="tag t-verified">verified</span> His conclusion calls this an unintended consequence. Cost: one eigendecomposition, O(d²n + kd³), versus O(nd²k² + d³k³) <em>per Newton iteration</em> for softmax.</div>
+    </div>
+  </section>
+
+  <!-- ===================== 04 ===================== -->
+  <section class="row">
+    <div class="main">
+      <h2><span class="num">04 / In practice</span>When you'd use it, and what exists</h2>
+      <p><strong>Bottom line: there is no library switch for this yet.</strong> It is a May 2026 arXiv paper, due at NeurIPS; code ships as the paper's supplementary material<a class="ref" data-note="no-lib"></a>. But the core is a few lines on top of SciPy.</p>
+    </div>
+    <div class="notes">
+      <div class="note" data-note="no-lib"><span class="n"></span><span class="tag t-verified">verified</span> Paper text: "code is provided as supplementary material". Searched for a public package or scikit-learn integration; found none.</div>
+      <div class="note cite">Bach (2026). "A Spectral Framework for Closed-Form Relative Density Estimation." arXiv:2605.10668. <a href="https://arxiv.org/abs/2605.10668">arXiv</a></div>
+    </div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <h3>Reach for it when</h3>
+      <ul>
+        <li>You want a <strong>KL divergence or mutual information</strong> number from samples, and samples are limited relative to features.</li>
+        <li>You want the <strong>log density ratio itself</strong> — drift detection between two datasets, covariate-shift reweighting, presence-vs-background modelling.</li>
+        <li>You need a <strong>deterministic, non-iterative</strong> fit: no learning rate, no convergence checks, reproducible to machine precision.</li>
+        <li>You have a <strong>good feature map</strong> already (hand-built, random features, or a frozen network's embeddings).</li>
+      </ul>
+      <h3>Skip it when</h3>
+      <ul>
+        <li>Data is plentiful — plain logistic regression is as good and fully supported.</li>
+        <li>Raw data is high-dimensional with no good features; Bach warns KL estimation suffers the curse of dimensionality<a class="ref" data-note="curse"></a>.</li>
+        <li>You need total variation distance — not covered by the framework.</li>
+        <li>Features number in the tens of thousands: cost is O(m²n + m³).</li>
+      </ul>
+    </div>
+    <div class="notes">
+      <div class="note" data-note="curse"><span class="n"></span><span class="tag t-verified">verified</span> His simulations stay in 2-D for this reason; feature learning (an EM-like algorithm) is his proposed route to higher dimensions, with details deferred to a later post.</div>
+    </div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <h3>Existing tools, mapped to the article</h3>
+      <ul>
+        <li><strong>The building block:</strong> <code>scipy.linalg.eigh(Sp, Sq)</code> solves the generalised problem Sp·v = λ·Sq·v with vᵀSq·v = 1 — exactly Bach's normalisation<a class="ref" data-note="eigh"></a>.</li>
+        <li><strong>Same shape, different job:</strong> <code>LinearDiscriminantAnalysis(solver="eigen")</code> calls <code>eigh(Sb, Sw)</code> internally; <code>RidgeCV(gcv_mode="eigen")</code> is the "one decomposition, many penalties" trick<a class="ref" data-note="sk-internals"></a>.</li>
+        <li><strong>The variational baseline:</strong> <code>LogisticRegression</code> trained to tell p-samples from q-samples; its log-odds estimate the log ratio (plus a constant from class sizes)<a class="ref" data-note="clf-trick"></a>. Neural version: MINE<a class="ref" data-note="mine"></a>.</li>
+        <li><strong>Least-squares density ratio:</strong> <code>densratio</code> (uLSIF / RuLSIF / KLIEP) — the Pearson-divergence approach Bach improves on.</li>
+        <li><strong>Different family entirely:</strong> <code>sklearn.feature_selection.mutual_info_regression</code> — nearest-neighbour MI estimate, no feature map.</li>
+        <li><strong>Random features:</strong> <code>sklearn.kernel_approximation.RBFSampler</code> produces φ(x) you could feed in. Bach used ReLU random features instead.</li>
+        <li><strong>MaxEnt SDMs:</strong> <code>elapid.MaxentModel</code> (Python) or <code>dismo::maxent</code> (R) — iterative, log-sum-exp based; a candidate for spectral comparison.</li>
+      </ul>
+    </div>
+    <div class="notes">
+      <div class="note" data-note="eigh"><span class="n"></span><span class="tag t-verified">verified</span> From SciPy 1.17 docstring, this session.</div>
+      <div class="note" data-note="sk-internals"><span class="n"></span><span class="tag t-verified">verified</span> Read from scikit-learn 1.8 source this session: <code>_RidgeGCV.fit</code> decomposes X once, then loops over alphas reusing it.</div>
+      <div class="note" data-note="clf-trick"><span class="n"></span><span class="tag t-mine">my reading</span> Follows from Bayes' rule; standard "classifier trick". Not a claim from the article.</div>
+      <div class="note" data-note="mine"><span class="n"></span><span class="tag t-verified">verified</span> MINE (Belghazi et al., ICML 2018) maximises the Donsker–Varadhan bound — Eq. (2), the exact form whose variance Bach targets. Its authors add a moving-average correction because the log-of-mean gradient is biased.</div>
+      <div class="note cite">Belghazi et al. (2018). "Mutual Information Neural Estimation." <em>ICML</em>, PMLR 80:531–540. <a href="https://proceedings.mlr.press/v80/belghazi18a.html">PMLR</a></div>
+    </div>
+  </section>
+
+  <section class="row">
+    <div class="main">
+      <h3>Architecture, if you build it yourself</h3>
+      <ul>
+        <li><strong>Featurise</strong> both sample sets with the same φ; include a constant column.</li>
+        <li><strong>Moments:</strong> μ<sub>p</sub>, μ<sub>q</sub>, Σ<sub>p</sub>, Σ<sub>q</sub>. Add a small ridge term to Σ<sub>q</sub>.</li>
+        <li><strong>Decompose:</strong> <code>eigh(Sp, Sq)</code>.</li>
+        <li><strong>Sum</strong> the per-direction contributions with the KL weight f(λ)/(λ−1)², whose limit at λ = 1 is ½.</li>
+      </ul>
+      <p>The last two steps, as tested this session<a class="ref" data-note="snippet"></a>:</p>
+<pre>lam, V = eigh(Sp, Sq)          # Sp v = lam Sq v
+proj   = (mu_p - mu_q) @ V     # one score per direction
+kl_hat = np.sum(proj**2 * w(lam))
+# w(t) = (t*log t - t + 1)/(t-1)**2 ; w(1) = 0.5</pre>
+      <p>Getting the potential <em>v(x)</em> — the per-point log ratio — needs the M, N, c matrices from the paper; that's the part worth reading it for.</p>
+    </div>
+    <div class="notes">
+      <div class="note" data-note="snippet"><span class="n"></span><span class="tag t-mine">my reading</span> My transcription of the post's final formula, not Bach's code. Produced the 5-D Gaussian numbers quoted in §03. Treat as a learning aid, not a reference implementation.</div>
+    </div>
+  </section>
+
+  <!-- ===================== open ===================== -->
+  <section class="open">
+    <div class="row">
+      <div class="main">
+        <h2><span class="num">05 / Loose ends</span>Open questions</h2>
+        <p class="prompt">When something doesn't land, say what you think it means. A wrong guess diagnoses faster than "unclear."</p>
+        <ul>
+          <li>Audience line is assumed. Correct it if this is for sharing rather than personal reference.</li>
+          <li>Not covered: the "Playing with SDPs" appendix and the feature-learning/EM section. Say if either should get its own section.</li>
+          <li>Offer: a worked comparison of spectral vs. <code>LogisticRegression</code> vs. MaxEnt on presence/background data.</li>
+          <li>Still unverified: GDAL's fitting method; GPS/Kalman framing.</li>
+          <li>Paper [9] (arXiv:2607.01895) has the exact bias/variance crossover analysis — not read this session.</li>
+        </ul>
+      </div>
+      <div class="notes"></div>
+    </div>
+  </section>
+
+</div>
+
+<footer>Working document &middot; revised 27 Sep 2026</footer>
+
+</div>
+
+<script>
+// Footnote numbers are derived from document order, never stored.
+// Inserting a note is a pure insert: nothing downstream needs renumbering.
+(function () {
+  var order = new Map();
+  var n = 0;
+
+  document.querySelectorAll('a.ref[data-note]').forEach(function (a) {
+    var key = a.dataset.note;
+    if (!order.has(key)) order.set(key, ++n);
+    a.textContent = order.get(key);
+    a.setAttribute('href', '#note-' + key);
+  });
+
+  document.querySelectorAll('.note[data-note]').forEach(function (d) {
+    var key = d.dataset.note;
+    d.id = 'note-' + key;
+    var num = order.get(key);
+    var span = d.querySelector('.n');
+    if (num === undefined) {
+      // Nothing references this note. Show it rather than hiding it.
+      d.classList.add('orphan');
+      if (span) span.textContent = '!';
+    } else if (span) {
+      span.textContent = num;
+    }
+  });
+})();
+</script>
+</body>
+</html>

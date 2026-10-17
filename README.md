@@ -13,6 +13,8 @@ The new comment feature for documents really shines here: context is
 shared with whatever Claude session started the doc, and having a
 reference that doesn't scroll out of sight is *incredibly* useful.
 
+An example document can be found [here](https://saintaardvark.github.io/claude-reference-document/example.html).
+
 ## To use
 
 Install as [a Claude skill](https://code.claude.com/docs/en/skills),
